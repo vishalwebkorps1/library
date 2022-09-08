@@ -76,4 +76,8 @@ Rails.application.configure do
   }
   config.exceptions_app = self.routes
   config.action_mailer.perform_deliveries = true
+
+  config.force_ssl = false
+  config.hosts << '.ngrok.io'
+  
 end

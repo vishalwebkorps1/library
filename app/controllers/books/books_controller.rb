@@ -20,21 +20,23 @@ class Books::BooksController < ApplicationController
 
 
     def create
-       @books = Book.new(books_params)
-       if @books.save
-        render json: @books, status: :created
+       @book = Book.new(books_params)
+   
+       
+       if @book.save
+        render json:{message: 'success'}
        else
-        render json: {error: "coudn't create"},status: :unprocessable_entity
+        render json: {error: "coudn't create #{@book.errors.full_messages}"},status: :unprocessable_entity
        end
     end
 
 
     def update
-        @books = Book.find(params[:id])
-        if @books.update(books_params)
+        @book = Book.find(params[:id])
+        if @book.update(books_params)
             render json: {message:"Book was successfully updated"}
         else
-            render json: { error: @books.errors.full_messages}, status: :unprocessable_entity
+            render json: { error: @book.errors.full_messages}, status: :unprocessable_entity
         end
 
            
@@ -42,11 +44,11 @@ class Books::BooksController < ApplicationController
 
 
     def destroy
-        @books = Book.find(params[:id])
-        if @books.destroy
+        @book = Book.find(params[:id])
+        if @book.destroy
             render json: {message:"Book was successfully destroyed"}
         else
-            render json: { error: @books.errors.full_messages}, status: :unprocessable_entity
+            render json: { error: @book.errors.full_messages}, status: :unprocessable_entity
         end
 
 
@@ -63,7 +65,7 @@ class Books::BooksController < ApplicationController
 
     def books_params
       
-        params.permit(:name, :author, :description, :user_id, :edition, :quantity)
+        params.require(:book).permit(:name, :author, :description, :user_id, :edition, :quantity)
     end
            
 
@@ -80,3 +82,21 @@ class Books::BooksController < ApplicationController
 
 
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

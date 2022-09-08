@@ -1,6 +1,6 @@
 class Users::UsersController < ApplicationController
 
-  load_and_authorize_resource 
+   load_and_authorize_resource 
 
 
 
@@ -55,6 +55,11 @@ class Users::UsersController < ApplicationController
   end
 
   def user_params
-   params.require(:user).permit( :name, :email, :password)
+   params.require(:user).permit( :name, :email, :password, :role_id, :address)
   end
 end
+
+
+
+
+

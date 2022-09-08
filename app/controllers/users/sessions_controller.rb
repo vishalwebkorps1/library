@@ -22,3 +22,4 @@ class Users::SessionsController < Devise::SessionsController
       render json: { message: "Hmm nothing happened."}, status: :unauthorized
     end
 end
+

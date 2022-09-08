@@ -1,5 +1,6 @@
 class Users::RegistrationsController < Devise::RegistrationsController
-  before_action :configure_permitted_parameters, if: :devise_controller?
+  before_action :configure_sign_up_params, only: [:create]
+  # before_action :configure_permitted_parameters, if: :devise_controller?
   respond_to :json
   include RackSessionFix
   
@@ -19,7 +20,10 @@ class Users::RegistrationsController < Devise::RegistrationsController
       render json: { message: "Something went wrong." }
     end
 
-    def configure_permitted_parameters
-      devise_parameter_sanitizer.permit(:sign_up, keys: [:name, :library_name, :address, :role])
+    def configure_sign_up_params
+      devise_parameter_sanitizer.permit(:sign_up, keys: [:name, :address, :role_id, :email, :password])
     end
 end
+
+
+

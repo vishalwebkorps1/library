@@ -12,7 +12,6 @@ class Users::RolesController < ApplicationController
     def show
       @roles = Role.find(params[:id])
       render json: @roles, status: :ok
-
     end
 
 
@@ -22,19 +21,17 @@ class Users::RolesController < ApplicationController
           render json: @roles, status: :created
         else
           render json: { errors: @user.errors.full_messages}
+        end
       end
-    end
 
      def update
-      @roles = Role.find(params[:id])
-      if @roles.update(roles_params)
-        render json: { meassage: "role was updated successfully"}
-      else
-        render json: { errors: @roles.errors.full_messages}, status: :unprocessable_entity
+        @roles = Role.find(params[:id])
+        if @roles.update(roles_params)
+          render json: { meassage: "role was updated successfully"}
+        else
+          render json: { errors: @roles.errors.full_messages}, status: :unprocessable_entity
+        end
       end
-
-
-     end
 
 
     def destroy
@@ -56,11 +53,10 @@ class Users::RolesController < ApplicationController
     def roles_params
       params.permit(:name)
     end
-
-    
-
-
-  
-
-    
 end
+
+
+
+
+
+

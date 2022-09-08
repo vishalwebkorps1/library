@@ -2,25 +2,26 @@ class Book < ApplicationRecord
 
     # Association
     belongs_to :user
+    has_many :issuedbooks
+            # Validations
+        validates :name, presence: true,
+                        uniqueness: {case_sensitive: false},
+                        length: {minimum: 4, maximum: 300}
 
+        validates :author, presence: true,
+                                     length: {minimum: 4, maximum: 300}
 
-        #     # Validations
-        # validates :name, presence: true,
-        #                 uniqueness: {case_sensitive: false},
-        #                 length: {minimum: 4, maximum: 300}
+        validates :description, presence: true,
+                                  length: {minimum: 8, maximum: 400}
 
-        # validates :author, presence: true,
-        #                              length: {minimum: 4, maximum: 300}
+        validates :user_id, presence: true
 
-        # validates :description, presence: true,
-        #                           length: {minimum: 8, maximum: 400}
+        validates :quantity, presence: true
 
-        # validates :user_id, presence: true
-
-        # validates :quantity, presence: true
-
-        # validates :edition, presence: true
+        validates :edition, presence: true
 
             
 
 end
+
+

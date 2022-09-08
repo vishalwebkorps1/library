@@ -1,249 +1,79 @@
 class Books::IssuedbooksController < ApplicationController
-     load_and_authorize_resource 
+    load_and_authorize_resource 
 
-
-
-     def index
-        if current_user == "admin"
-          @issuedbooks = Issuedbook.all
-        else
-          @issuedbooks = current_user.issuedbooks
-        end
-        if @issuedbooks.empty?
-          show_info({message:"there are no books to show"})
-        else
-          show_info({issuedbooks: gen_issued_book(many=true)})
-        end
+  def index 
+    if current_user.role.name == 'admin'
+      @books = Issuedbook.all
+      render json: @books, status: :ok unless @books.blank?
+      if @books.blank?
+        render json: {message: "no issued Books"}
       end
-    
-      # GET /issuedbooks/1
-      #
-      def show
-        if current_user.role.name == "admin"
-          show_info gen_issued_book
-        elsif current_user.id == @issuedbook.user.id
-          show_info gen_issued_book
-        else
-          faliure_response("The book you're trying to view is not issued by you")
-        end
-      end
-
-      def create
-        # only a student can issue a book
-        @issuedbook = Issuedbook.new(issuedbook_creation_params)
-    
-        # if user enters old date for submission it will give error
-        if @issuedbook.submittion < Date.today
-          faliure_response("You're entering wrong submission date.")
-        else
-    
-          # getting current user issued books
-          books = current_user.issuedbooks
-          array = []
-          books.each do |book|
-            if book.is_returned == false
-              array << book.book_id
-            end
-          end
-    
-
-
-      
-        # checking whether the user has the book already issued
-        if array.include?(@issuedbook.book.id)
-          faliure_response("you already have this book issued")
-        else
-          if @issuedbook.book.quantity > 0
-  
-            @issuedbook.book.quantity -= 1 # decreasing the quatity of the book viz., issued
-            @issuedbook.user = current_user
-            @issuedbook.is_returned = false
-            @issuedbook.issued_on = Date.today
-            @issuedbook.fine = 0.0
-  
-            if @issuedbook.save
-              @issuedbook.book.save
-  
-              # sending success issue mail to the user
-              # UserMailer.issue_request_create(@issuedbook).deliver_later
-              render json: {book_issued: gen_issued_book}, status: :created, location: @issuedbook
-            else
-              handle_error @issuedbook.errors
-            end
-          else
-            faliure_response("Sorry, This Book is not available for issuing.")
-          end
-        end
-      end
+    else
+      @books = current_user.issuedbooks.all
+      render json: @books
+      # no_book
     end
-  
-    # PATCH/PUT /issuedbooks/1
-    def update
-  
-      # Admin can't update a returned book
-      if @issuedbook.is_returned == true
-        faliure_response("Cant't update, the book is already returned")
+  end
+
+  def issue
+    #authorize! :issue , Book
+    @book = Book.find_by(name: params[:name])
+    @issue = Issuedbook.find_by(book_id: @book.id, user_id: params[:user_id].to_i)
+    if !@issue.blank? && @book.id == @issue.book_id
+      render json: {message: "Book Already issued"}
+    else
+      @issue = Issuedbook.new(book_id: @book.id, user_id: params[:user_id].to_i)
+      if @issue.save
+        @book.update(quantity: (@book.quantity.to_i - 1).to_s)
+        render json: {message: "issue successfully"}
       else
-        if @issuedbook.update(issuedbook_params)
-          show_info gen_issued_book
-        else
-          handle_error @issuedbook.errors
-        end
+        render json: {errors: @issue.errors.full_messages}
       end
     end
-  
-    # DELETE /issuedbooks/1
-    def destroy
-      if @issuedbook.destroy
-        if @issuedbook.is_returned == false
-          @issuedbook.book.quantity += 1 # after getting a active issue destroyed the book quantity will get increased by 1
-          success_response("IssuedBook-request deleted successfully with id: #{@issuedbook.id}, issuer_name: #{@issuedbook.user.name}, book_creator: #{@issuedbook.book.user.name}")
-        else
-          @issuedbook.book.save
-          success_response("IssuedBook-request deleted successfully with id: #{@issuedbook.id}, issuer_name: #{@issuedbook.user.name}, book_creator: #{@issuedbook.book.user.name}")
-        end
-      else
-        faliure_response("IssuedBook-request is not deleted")
-      end
+  end
+
+  def return
+    #authorize! :return , IssuedBook
+    @user = Issuedbook.find_by(user_id: params[:user_id])
+    if @user.destroy
+      @book = Book.find_by(id: @user.book_id)
+      @book.update(quantity: (@book.quantity.to_i + 1).to_s)
+      render json: {message: "Book returned successfully"}
+    else
+      render json: {message: "Book not returned"}
     end
-  
-    # POST /issuedbooks/return/:id
-    def return
-      @issuedbook = Issuedbook.find(params[:id])
-  
-      # Checking whether the book is already returned or not
-      if @issuedbook.is_returned == true
-        # sending failed res
-        faliure_response("Book is already returned")
-      else
-        if @issuedbook.user == current_user
-          @issuedbook.return_dt = Date.today
-          @issuedbook.book.quantity += 1 # after a successfull return the book quantity will be increased by 1
-          @issuedbook.is_returned = true
-  
-          # generating fine
-          if @issuedbook.return_dt > @issuedbook.submittion
-  
-            days = (@issuedbook.issued_on...@issuedbook.return_dt).count
-  
-            if days >= 1 && days <= 5
-              @issuedbook.fine += 20.0
-            elsif days >= 5 && days <= 10
-              @issuedbook.fine += 50.0
-            elsif days >= 10 && days <= 15
-              @issuedbook.fine += 100.0
-            else
-              @issuedbook.fine += days * 15.0
-            end
-  
-            @issuedbook.save
-            @issuedbook.book.save
-            UserMailer.issue_return_create(@issuedbook).deliver_later
-            success_response(gen_issued_book)
-  
-          else
-            @issuedbook.save
-            @issuedbook.book.save
-            UserMailer.issue_return_create(@issuedbook).deliver_later
-            success_response(gen_issued_book)
-          end
-        else
-          faliure_response("This book is not issued by you.")
-        end
-      end
-    end
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-    def update
-      if @issued_books.update(issuedbooks_params)
-            render json:{message: 'issuedbooks updated successfully'}
-      else
-            render json:{message: 'issued_books is not updated successfully'}
-      end
-    end
-
-    def create
-        @issued_book = Issuedbook.new(issuedbooks_params)
-        if @issued_book.save
-            # @issued_book.intime = Time.now
-            @issued_book.save
-            render json:{message:"issued_books created successfully"}
-        else
-            render json:{message:"issued_books is not created successfully"}
-        end
-    end
-
-          
-      def destroy
-          if @issued_books.destroy
-              render json:{message: 'issued_books destroyed successfully destroyed'}
-          else
-              render json:{message: 'issuedbooks is not destroyed successfully'}
-          end
-      end
-        
-
-
-    private
-
-    def set_issuedbook
-
-        @issuedbooks = Issuedbook.find(params[:id])
-
-    end
-
-
-    def issuedbooks_params
-
-        params.require(:issuedbooks).permit(:name, :user_id , :is_returned , :return_dt, :issued_on, :fine, :submittion)
-
-    end
-
-
-
-    def issuedbooks_creation_params
-
-        params.require(:issuedbooks).permit(:book_id, :submittion)
-
-    end
-
-
-
-  
-
-
-
-
-
-
-
-
-
+  end
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
