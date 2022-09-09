@@ -17,7 +17,7 @@ Rails.application.routes.draw do
   end
   # Issuedbook routes
   get 'issued/index' , to: 'books/issuedbooks#index'
-  put 'issued/:user_id' , to: 'books/issuedbooks#issue'
+  post 'issued/:user_id' , to: 'books/issuedbooks#issue'
   delete 'return/:id', to:  'books/issuedbooks#return'
 
   

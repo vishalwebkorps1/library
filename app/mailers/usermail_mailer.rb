@@ -1,5 +1,7 @@
 class UsermailMailer < ApplicationMailer
     def welcome
-        mail(to: params[:email],subjects:"successfully")
+        @book = params[:book_id]
+
+        mail(to: "vish75810@gmail.com", subject: "Welcome to Mailer")
     end    
 end

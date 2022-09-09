@@ -25,6 +25,8 @@ class Books::IssuedbooksController < ApplicationController
       @issue = Issuedbook.new(book_id: @book.id, user_id: params[:user_id].to_i)
       if @issue.save
         @book.update(quantity: (@book.quantity.to_i - 1).to_s)
+
+        UsermailMailer.with(book_id: @book.id).welcome.deliver_later
         render json: {message: "issue successfully"}
       else
         render json: {errors: @issue.errors.full_messages}
