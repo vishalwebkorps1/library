@@ -1,24 +1,17 @@
 class Ability
   include CanCan::Ability
-
   def initialize(user)
-    
-   
-
-    if user.present? && user.role.name == "admin"
-        
+    if user.present? && user.role.name == "admin"   
       can :manage, :all
-      # cannot :create, Issuedbook
-
-    else
-      
-       user.role.name == "student"
-        can %i[read], Book
-        can %i[profile], User, user: user
-        can %i[read issue return], Issuedbook, user: user
-      end
-    end 
+    # cannot :create, Issuedbook
+  else
+    user&.role&.name == "user"
+    can %i[read], Book
+    # can %i[profile], User, user: user
+    can %i[read], Issuedbook, user: user
   end
+end
+end
 
-  
+
 
