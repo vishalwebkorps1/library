@@ -5,17 +5,21 @@ class Books::BooksController < ApplicationController
   # GET /books
   def index
     @books = Book.all
+    Bookmaker::BookCreator.call(@book)
     information(@books)
   end
 
   # get /books/1
   def show
+    Bookmaker::BookCreator.call(@book)
     information([@book])
   end
 
   # Post /books
   def create
+    
     @book = Book.new(books_params)
+    Bookmaker::BookCreator.call(@book)
     if @book.save
       render json:{message: 'Book was created successfully', book: @book},status: :created
     else
@@ -23,9 +27,11 @@ class Books::BooksController < ApplicationController
     end
   end
   
+  
   # PUT /books/
   def update
     if @book.update(books_params)
+      Bookmaker::BookCreator.call(@book)
       render json: {message:"Book was successfully updated", book: books_params}
     else
       handle_error @book.errors
@@ -35,12 +41,13 @@ class Books::BooksController < ApplicationController
   # DELETE /books/:id
   def destroy
     if @book.destroy
+      Bookmaker::BookCreator.call(@book)
       render json: {message:"Book was successfully destroyed"}
     else
       render json: { error: @book.errors.full_messages}, status: :unprocessable_entity
     end
   end
-  
+ 
   private
 
   

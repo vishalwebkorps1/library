@@ -1,8 +1,8 @@
 class Book < ApplicationRecord
     # Association
-    belongs_to :user 
+    belongs_to :user, optional: true
     has_many :issuedbooks, dependent: :destroy
-    # Validations
+    Validations
     validates :name, presence: true,
                     uniqueness: {case_sensitive: false},
                     length: {minimum: 4, maximum: 300}
