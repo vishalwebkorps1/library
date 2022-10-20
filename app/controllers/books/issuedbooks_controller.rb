@@ -31,12 +31,11 @@ class Books::IssuedbooksController < ApplicationController
 
       #  Issuedbook Saved and Updated
       if @issue.save
-        @book.update(quantity: (@book.quantity.to_i - 1).to_s)
-
-        # send mail if book was successfully issued 
-        UsermailMailer.with(book_id: @book.id).welcome.deliver_later
-        render json: {message: "issue successfully"}
-      else
+         @book.update(quantity: (@book.quantity.to_i - 1).to_s)
+         # send mail if book was successfully issued 
+        # UsermailMailer.with(book_id: @book.id).welcome.deliver_later
+         render json: {message: "issue successfully"}
+       else
         render json: {errors: @issue.errors.full_messages}
       end
     end
@@ -46,9 +45,10 @@ class Books::IssuedbooksController < ApplicationController
   # DELETE  /issued/return/:id
   def return
     # Issuedbook find by user id
-    @user = Issuedbook.find_by(params[:user_id])
+    @user = Issuedbook.find_by(params[:id])
     #  if user is authorized to return this book book destroy and updated
     if @user&.destroy
+      debugger
       @book = Book.find_by(id: @user.book_id)
       @book.update(quantity: (@book.quantity.to_i + 1).to_s)
       render json: { message: 'Book returned successfully' }

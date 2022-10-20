@@ -23,7 +23,7 @@ class Books::BooksController < ApplicationController
     if @book.save
       render json:{message: 'Book was created successfully', book: @book},status: :created
     else
-      render json: {error: "coudn't create #{@book.errors.full_messages}"},status: :unprocessable_entity
+      render json: {error: "coudn't create #{@book.errors.full_messages}"}
     end
   end
   
