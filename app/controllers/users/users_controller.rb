@@ -7,6 +7,7 @@ class Users::UsersController < ApplicationController
   end
   # GET /users/{userid}
   def show
+  
     @user = User.find(params[:id])
     # @user.has_role?(:admin) #|| @record.course.user_id == @user.id
     render json: @user, status: :ok

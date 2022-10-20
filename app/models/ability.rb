@@ -7,7 +7,6 @@ class Ability
   else
     user&.role&.name == "user"
     can %i[read], Book
-    # can %i[profile], User, user: user
     can %i[read], Issuedbook, user: user
   end
 end
