@@ -1,4 +1,7 @@
 class Book < ApplicationRecord
+    include PublicActivity::Model
+    tracked
+
     # Association
     belongs_to :user, optional: true
     has_many :issuedbooks, dependent: :destroy

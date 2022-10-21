@@ -70,6 +70,11 @@ end
 gem 'factory_bot_rails'
 gem 'simplecov', require: false, group: :test
 gem 'rails-controller-testing'
+gem 'public_activity'
+group :development do
+  gem "better_errors"
+  gem "binding_of_caller"
+end
 
 
 

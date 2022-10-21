@@ -7,6 +7,7 @@ class Books::BooksController < ApplicationController
     @books = Book.all
     Bookmaker::BookCreator.call(@book)
     information(@books)
+    @activities = PublicActivity::Activity.all
   end
 
   # get /books/1
